@@ -24,17 +24,17 @@ from typing import Generator, List, Tuple, Union
 import colorama
 from colorama import Style
 
-from abalone.enums import Direction, InitialPosition, Marble, Player, Space
-from abalone.utils import line_from_to, line_to_edge, neighbor
+from enums import Direction, InitialPosition, Marble, Player, Space
+from utils import line_from_to, line_to_edge, neighbor
 
 colorama.init(autoreset=True)
 
 
 def _space_to_board_indices(space: Space) -> Tuple[int, int]:
-    """Returns the corresponding index for `self.board` of a given `abalone.enums.Space`.
+    """Returns the corresponding index for `self.board` of a given `enums.Space`.
 
     Args:
-        space: The `abalone.enums.Space` for which the indices are wanted.
+        space: The `enums.Space` for which the indices are wanted.
 
     Returns:
         An int tuple containing two indices for `self.board`.
@@ -54,13 +54,13 @@ def _space_to_board_indices(space: Space) -> Tuple[int, int]:
 
 
 def _marble_of_player(player: Player) -> Marble:
-    """Returns the corresponding `abalone.enums.Marble` for a given `abalone.enums.Player`.
+    """Returns the corresponding `enums.Marble` for a given `enums.Player`.
 
     Args:
-        player: The `abalone.enums.Player` whose `abalone.enums.Marble` is wanted.
+        player: The `enums.Player` whose `enums.Marble` is wanted.
 
     Returns:
-        The `abalone.enums.Marble` which belongs to `player`.
+        The `enums.Marble` which belongs to `player`.
     """
 
     return Marble.WHITE if player is Player.WHITE else Marble.BLACK
@@ -74,27 +74,32 @@ class Game:
         self.turn = first_turn
 
     def __str__(self) -> str:  # pragma: no cover
-        board_lines = list(map(lambda line: ' '.join(map(str, line)), self.board))
+        board_lines = list(
+            map(lambda line: ' '.join(map(str, line)), self.board))
         string = ''
         string += Style.DIM + '    I ' + Style.NORMAL + board_lines[0] + '\n'
         string += Style.DIM + '   H ' + Style.NORMAL + board_lines[1] + '\n'
         string += Style.DIM + '  G ' + Style.NORMAL + board_lines[2] + '\n'
         string += Style.DIM + ' F ' + Style.NORMAL + board_lines[3] + '\n'
         string += Style.DIM + 'E ' + Style.NORMAL + board_lines[4] + '\n'
-        string += Style.DIM + ' D ' + Style.NORMAL + board_lines[5] + Style.DIM + ' 9\n' + Style.NORMAL
-        string += Style.DIM + '  C ' + Style.NORMAL + board_lines[6] + Style.DIM + ' 8\n' + Style.NORMAL
-        string += Style.DIM + '   B ' + Style.NORMAL + board_lines[7] + Style.DIM + ' 7\n' + Style.NORMAL
-        string += Style.DIM + '    A ' + Style.NORMAL + board_lines[8] + Style.DIM + ' 6\n' + Style.NORMAL
+        string += Style.DIM + ' D ' + Style.NORMAL + \
+            board_lines[5] + Style.DIM + ' 9\n' + Style.NORMAL
+        string += Style.DIM + '  C ' + Style.NORMAL + \
+            board_lines[6] + Style.DIM + ' 8\n' + Style.NORMAL
+        string += Style.DIM + '   B ' + Style.NORMAL + \
+            board_lines[7] + Style.DIM + ' 7\n' + Style.NORMAL
+        string += Style.DIM + '    A ' + Style.NORMAL + \
+            board_lines[8] + Style.DIM + ' 6\n' + Style.NORMAL
         string += Style.DIM + '       1 2 3 4 5' + Style.NORMAL
         return string
 
     def not_in_turn_player(self) -> Player:
-        """Gets the `abalone.enums.Player` who is currently *not* in turn. Returns `abalone.enums.Player.WHITE` when\
-        `abalone.enums.Player.BLACK` is in turn and vice versa. This player is commonly referred to as "opponent" in\
+        """Gets the `enums.Player` who is currently *not* in turn. Returns `enums.Player.WHITE` when\
+        `enums.Player.BLACK` is in turn and vice versa. This player is commonly referred to as "opponent" in\
         other places.
 
         Returns:
-            The `abalone.enums.Player` not in turn.
+            The `enums.Player` not in turn.
         """
 
         return Player.BLACK if self.turn is Player.WHITE else Player.WHITE
@@ -104,14 +109,14 @@ class Game:
         self.turn = self.not_in_turn_player()
 
     def set_marble(self, space: Space, marble: Marble) -> None:
-        """Updates the state of a `abalone.enums.Space` on the board.
+        """Updates the state of a `enums.Space` on the board.
 
         Args:
-            space: The `abalone.enums.Space` to be updated.
-            marble: The new state of `space` of type `abalone.enums.Marble`
+            space: The `enums.Space` to be updated.
+            marble: The new state of `space` of type `enums.Marble`
 
         Raises:
-            Exception: Cannot set state of `abalone.enums.Space.OFF`
+            Exception: Cannot set state of `enums.Space.OFF`
         """
 
         if space is Space.OFF:
@@ -121,16 +126,16 @@ class Game:
         self.board[x][y] = marble
 
     def get_marble(self, space: Space) -> Marble:
-        """Returns the state of a `abalone.enums.Space`.
+        """Returns the state of a `enums.Space`.
 
         Args:
-            space: The `abalone.enums.Space` of which the state is to be returned.
+            space: The `enums.Space` of which the state is to be returned.
 
         Returns:
-            A `abalone.enums.Marble` representing the current state of `space`.
+            A `enums.Marble` representing the current state of `space`.
 
         Raises:
-            Exception: Cannot get state of `abalone.enums.Space.OFF`
+            Exception: Cannot get state of `enums.Space.OFF`
         """
 
         if space is Space.OFF:
@@ -160,10 +165,10 @@ class Game:
         """Counts the number of own and enemy marbles that are in the given line. First the directly adjacent marbles\
         of the player whose turn it is are counted and then the subsequent directly adjacent marbles of the opponent.\
         Therefore only the marbles that are relevant for an inline move are counted. This method serves as an\
-        helper method for `abalone.game.Game.move_inline`.
+        helper method for `game.Game.move_inline`.
 
         Args:
-            line: A list of `abalone.enums.Space`s that are in a straight line.
+            line: A list of `enums.Space`s that are in a straight line.
 
         Returns:
             A tuple with the number of 1. own marbles and 2. opponent marbles, according to the counting method\
@@ -185,8 +190,8 @@ class Game:
         if the opponent's marbles are outnumbered ("sumito") and are moved to an empty space or off the board.
 
         Args:
-            caboose: The `abalone.enums.Space` of the trailing marble of a straight line of up to three marbles.
-            direction: The `abalone.enums.Direction` of movement.
+            caboose: The `enums.Space` of the trailing marble of a straight line of up to three marbles.
+            direction: The `enums.Direction` of movement.
 
         Raises:
             IllegalMoveException: Only own marbles may be moved
@@ -203,20 +208,26 @@ class Game:
         own_marbles_num, opp_marbles_num = self._inline_marbles_nums(line)
 
         if own_marbles_num > 3:
-            raise IllegalMoveException('Only lines of up to three marbles may be moved')
+            raise IllegalMoveException(
+                'Only lines of up to three marbles may be moved')
 
         if own_marbles_num == len(line):
-            raise IllegalMoveException('Own marbles must not be moved off the board')
+            raise IllegalMoveException(
+                'Own marbles must not be moved off the board')
 
         # sumito
         if opp_marbles_num > 0:
             if opp_marbles_num >= own_marbles_num:
-                raise IllegalMoveException('Only lines that are shorter than the player\'s line can be pushed')
-            push_to = neighbor(line[own_marbles_num + opp_marbles_num - 1], direction)
+                raise IllegalMoveException(
+                    'Only lines that are shorter than the player\'s line can be pushed')
+            push_to = neighbor(
+                line[own_marbles_num + opp_marbles_num - 1], direction)
             if push_to is not Space.OFF:
                 if self.get_marble(push_to) is _marble_of_player(self.turn):
-                    raise IllegalMoveException('Marbles must be pushed to an empty space or off the board')
-                self.set_marble(push_to, _marble_of_player(self.not_in_turn_player()))
+                    raise IllegalMoveException(
+                        'Marbles must be pushed to an empty space or off the board')
+                self.set_marble(push_to, _marble_of_player(
+                    self.not_in_turn_player()))
 
         self.set_marble(line[own_marbles_num], _marble_of_player(self.turn))
         self.set_marble(caboose, Marble.BLANK)
@@ -224,48 +235,53 @@ class Game:
     def move_broadside(self, boundaries: Tuple[Space, Space], direction: Direction) -> None:
         """Performs a broadside move. With a broadside move a line of adjacent marbles is moved sideways into empty\
         spaces. However, it is not possible to push the opponent's marbles. A broadside move is denoted by the two\
-        outermost `abalone.enums.Space`s of the line to be moved and the `abalone.enums.Direction` of movement. With a\
+        outermost `enums.Space`s of the line to be moved and the `enums.Direction` of movement. With a\
         broadside move two or three marbles can be moved, i.e. the two boundary marbles are either direct neighbors or\
         there is exactly one marble in between.
 
         Args:
-            boundaries: A tuple of the two outermost `abalone.enums.Space`s of a line of two or three marbles.
-            direction: The `abalone.enums.Direction` of movement.
+            boundaries: A tuple of the two outermost `enums.Space`s of a line of two or three marbles.
+            direction: The `enums.Direction` of movement.
 
         Raises:
-            IllegalMoveException: Elements of boundaries must not be `abalone.enums.Space.OFF`
+            IllegalMoveException: Elements of boundaries must not be `enums.Space.OFF`
             IllegalMoveException: Only two or three neighboring marbles may be moved with a broadside move
             IllegalMoveException: The direction of a broadside move must be sideways
             IllegalMoveException: Only own marbles may be moved
             IllegalMoveException: With a broadside move, marbles can only be moved to empty spaces
         """
         if boundaries[0] is Space.OFF or boundaries[1] is Space.OFF:
-            raise IllegalMoveException('Elements of boundaries must not be `Space.OFF`')
+            raise IllegalMoveException(
+                'Elements of boundaries must not be `Space.OFF`')
         marbles, direction1 = line_from_to(boundaries[0], boundaries[1])
         if marbles is None or not (len(marbles) == 2 or len(marbles) == 3):
-            raise IllegalMoveException('Only two or three neighboring marbles may be moved with a broadside move')
+            raise IllegalMoveException(
+                'Only two or three neighboring marbles may be moved with a broadside move')
         _, direction2 = line_from_to(boundaries[1], boundaries[0])
         if direction is direction1 or direction is direction2:
-            raise IllegalMoveException('The direction of a broadside move must be sideways')
+            raise IllegalMoveException(
+                'The direction of a broadside move must be sideways')
         for marble in marbles:
             if self.get_marble(marble) is not _marble_of_player(self.turn):
                 raise IllegalMoveException('Only own marbles may be moved')
             destination_space = neighbor(marble, direction)
             if destination_space is Space.OFF or self.get_marble(destination_space) is not Marble.BLANK:
-                raise IllegalMoveException('With a broadside move, marbles can only be moved to empty spaces')
+                raise IllegalMoveException(
+                    'With a broadside move, marbles can only be moved to empty spaces')
         for marble in marbles:
             self.set_marble(marble, Marble.BLANK)
-            self.set_marble(neighbor(marble, direction), _marble_of_player(self.turn))
+            self.set_marble(neighbor(marble, direction),
+                            _marble_of_player(self.turn))
 
     def move(self, marbles: Union[Space, Tuple[Space, Space]], direction: Direction) -> None:
         """Performs either an inline or a broadside move, depending on the arguments passed, by calling the according\
-        method (`abalone.game.Game.move_inline` or `abalone.game.Game.move_broadside`).
+        method (`game.Game.move_inline` or `game.Game.move_broadside`).
 
         Args:
-            marbles: The `abalone.enums.Space`s with the marbles to be moved. Either a single space for an inline move\
+            marbles: The `enums.Space`s with the marbles to be moved. Either a single space for an inline move\
                 or a tuple of two spaces for a broadside move, in accordance with the parameters of\
-                `abalone.game.Game.move_inline` resp. `abalone.game.Game.move_broadside`.
-            direction: The `abalone.enums.Direction` of movement.
+                `game.Game.move_inline` resp. `game.Game.move_broadside`.
+            direction: The `enums.Direction` of movement.
 
         Raises:
             Exception: Invalid arguments
@@ -283,7 +299,7 @@ class Game:
         """Generates all adjacent straight lines with up to three marbles of the player whose turn it is.
 
         Yields:
-            Either one or two `abalone.enums.Space`s according to the first parameter of `abalone.game.Game.move`.
+            Either one or two `enums.Space`s according to the first parameter of `game.Game.move`.
         """
         for space in Space:
             if space is Space.OFF or self.get_marble(space) is not _marble_of_player(self.turn):
@@ -299,10 +315,10 @@ class Game:
 
     def generate_legal_moves(self) -> Generator[Tuple[Union[Space, Tuple[Space, Space]], Direction], None, None]:
         """Generates all possible moves that the player whose turn it is can perform. The yielded values are intended\
-        to be passed as arguments to `abalone.game.Game.move`.
+        to be passed as arguments to `game.Game.move`.
 
         Yields:
-            A tuple of 1. either one or a tuple of two `abalone.enums.Space`s and 2. a `abalone.enums.Direction`
+            A tuple of 1. either one or a tuple of two `enums.Space`s and 2. a `enums.Direction`
         """
         for marbles in self.generate_own_marble_lines():
             for direction in Direction:
